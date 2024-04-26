@@ -4,26 +4,40 @@ import { StatusBar } from 'expo-status-bar';
 import { Provider as PaperProvider, Appbar, Menu } from 'react-native-paper';
 
 // Calendar Component
-const Calendar = () => {
-  const dates = [];
-  for (let i = 1; i <= 31; i++) {
-    dates.push(`April ${i}`);
-  }
+const Calendar = ({ foodList }) => {
+  const [totalCalories, setTotalCalories] = useState(0);
+
+  // Function to calculate total calories for a specific date
+  const calculateTotalCalories = (date) => {
+    return foodList
+      .filter((item) => item.date === date)
+      .reduce((total, item) => total + parseInt(item.calories), 0);
+  };
+
+  // Display total calories for each date
+  const renderDatesWithCalories = () => {
+    const datesWithCalories = [];
+    for (let i = 1; i <= 31; i++) {
+      const date = `April ${i}`;
+      const calories = calculateTotalCalories(date);
+      datesWithCalories.push(
+        <View key={i} style={styles.dateContainer}>
+          <Text style={styles.dateText}>{date}</Text>
+          <Text>Total Calories: {calories}</Text>
+        </View>
+      );
+    }
+    return datesWithCalories;
+  };
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.calendarContainer}>
-        {dates.map((date, index) => (
-          <View key={index} style={styles.dateContainer}>
-            <Text style={styles.dateText}>{date}</Text>
-            {/* You can add more content for each date if needed */}
-          </View>
-        ))}
+        {renderDatesWithCalories()}
       </ScrollView>
     </View>
   );
 };
-
 
 export default function App() {
   const [menuVisible, setMenuVisible] = useState(false);
@@ -45,7 +59,9 @@ export default function App() {
 
   const handleSend = () => {
     if (food !== '' && calories !== '') {
-      setFoodList([...foodList, { food: food, calories: calories }]);
+      const today = new Date();
+      const date = `April ${today.getDate()}`;
+      setFoodList([...foodList, { food: food, calories: calories, date: date }]);
       setFood('');
       setCalories('');
     }
@@ -93,34 +109,34 @@ export default function App() {
               keyboardType="numeric" // Only allow numeric input
             />
             <Button onPress={handleSend} title="Send" />
+            <Text style={styles.totalCaloriesText}>
+              Total amount of calories consumed: {getTotalCalories()}
+            </Text>
           </View>
         ) : (
-          <Calendar />
+          <Calendar foodList={foodList} />
         )}
         {currentPage === 'Homepage' && (
-          <Text style={styles.totalCaloriesText}>
-            Total amount of calories consumed: {getTotalCalories()}
-          </Text>
-        )}
-      </View>
-      <View style={styles.tableContainer}>
-        <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          <View style={styles.contentContainer}>
-            <Text style={styles.tableHeader}>Consumed</Text>
-            <Text style={styles.tableHeader}>Amount of Calories</Text>
-            <FlatList
-              data={foodList}
-              renderItem={({ item }) => (
-                <View style={styles.tableRow}>
-                  <Text>{item.food}</Text>
-                  <Text>{item.calories}</Text>
-                </View>
-              )}
-              keyExtractor={(item, index) => index.toString()}
-            />
+          <View style={styles.tableContainer}>
+            <ScrollView contentContainerStyle={styles.scrollViewContent}>
+              <View style={styles.contentContainer}>
+                <Text style={styles.tableHeader}>Consumed</Text>
+                <Text style={styles.tableHeader}>Amount of Calories</Text>
+                <FlatList
+                  data={foodList}
+                  renderItem={({ item }) => (
+                    <View style={styles.tableRow}>
+                      <Text>{item.food}</Text>
+                      <Text>{item.calories}</Text>
+                    </View>
+                  )}
+                  keyExtractor={(item, index) => index.toString()}
+                />
+              </View>
+            </ScrollView>
+            <StatusBar style="auto" />
           </View>
-        </ScrollView>
-        <StatusBar style="auto" />
+        )}
       </View>
     </PaperProvider>
   );
@@ -206,5 +222,36 @@ const styles = StyleSheet.create({
   totalCaloriesText: {
     fontWeight: 'bold',
     fontSize: 18
-  }
+  },
+  calendarContainer: {
+    alignItems: 'center',
+  },
+  dateContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    marginBottom: 10,
+    padding: 20,
+    width: '90%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  dateText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333333',
+  },
+  caloriesText: {
+    fontSize: 14,
+    color: '#666666',
+  },
 });
