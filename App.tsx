@@ -16,16 +16,20 @@ const Calendar = ({ foodList }) => {
 
   // Display total calories for each date
   const renderDatesWithCalories = () => {
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const datesWithCalories = [];
-    for (let i = 1; i <= 31; i++) {
-      const date = `April ${i}`;
-      const calories = calculateTotalCalories(date);
-      datesWithCalories.push(
-        <View key={i} style={styles.dateContainer}>
-          <Text style={styles.dateText}>{date}</Text>
-          <Text>Total Calories: {calories}</Text>
-        </View>
-      );
+    for (let monthIndex = 0; monthIndex < months.length; monthIndex++) {
+      const month = months[monthIndex];
+      for (let day = 1; day <= 31; day++) {
+        const date = `${month} ${day}`;
+        const calories = calculateTotalCalories(date);
+        datesWithCalories.push(
+          <View key={`${month}-${day}`} style={styles.dateContainer}>
+            <Text style={styles.dateText}>{date}</Text>
+            <Text>Total Calories: {calories}</Text>
+          </View>
+        );
+      }
     }
     return datesWithCalories;
   };
@@ -60,7 +64,8 @@ export default function App() {
   const handleSend = () => {
     if (food !== '' && calories !== '') {
       const today = new Date();
-      const date = `April ${today.getDate()}`;
+      const month = today.toLocaleString('default', { month: 'long' });
+      const date = `${month} ${today.getDate()}`;
       setFoodList([...foodList, { food: food, calories: calories, date: date }]);
       setFood('');
       setCalories('');
@@ -141,6 +146,7 @@ export default function App() {
     </PaperProvider>
   );
 }
+
 
 
 const styles = StyleSheet.create({
